@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(python3:*)",
+      "Bash(npm test:*)",
+      "Bash(node -e ':*)",
+      "Bash(npx tsx:*)",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(npx vitest:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

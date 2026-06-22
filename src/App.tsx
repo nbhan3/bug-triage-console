@@ -67,7 +67,11 @@ export default function App() {
   // Global tooltip toggle
   const [tooltipsEnabled, setTooltipsEnabled] = useState(true);
   // Demo mode — replaces the queue with exactly the 15 spec seeds, restores on exit
-  const [demoMode, setDemoMode] = useState(false);
+  const [demoMode, setDemoMode] = useState(true);
+  // Welcome modal — shown once on first visit
+  const [showWelcome, setShowWelcome] = useState(
+    () => !localStorage.getItem("btc_welcomed"),
+  );
   const savedQueue = useRef<QueueItem[]>([]);
   // Keep a live ref to queue so the demo-off branch can restore without stale closure
   const queueRef = useRef<QueueItem[]>(queue);
@@ -357,6 +361,14 @@ export default function App() {
       {/* ── Tab: Methodology ── */}
       {activeTab === "methodology" && <Methodology />}
     </div>
+
+    {/* Welcome modal — first visit only */}
+    {showWelcome && (
+      <WelcomeModal onClose={() => {
+        localStorage.setItem("btc_welcomed", "1");
+        setShowWelcome(false);
+      }} />
+    )}
     </TooltipsContext.Provider>
   );
 }
@@ -449,6 +461,61 @@ function DraftActions({
         <strong>Confirm &amp; Route</strong> is the explicit, deliberate action;
         triage alone never routes.
       </p>
+    </div>
+  );
+}
+
+function WelcomeModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="relative mx-4 max-w-md rounded-2xl border border-cream-border bg-white p-7 shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Logo mark */}
+        <div className="mb-4 flex items-center gap-2.5">
+          <SalientLogo />
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400">
+            Salient · Bug Triage Console
+          </span>
+        </div>
+
+        <h2 className="mb-3 text-lg font-bold text-ink leading-snug">
+          Hello — welcome!
+        </h2>
+
+        <p className="text-sm text-stone-600 leading-relaxed">
+          Welcome to the <strong>Bug Triage Console</strong> for the Salient
+          Take Home Exercise, created by{" "}
+          <strong>Neal Bhandari</strong>. The 15 example reports are already
+          loaded so you can explore the interface right away. You can toggle
+          them off at any time by turning off{" "}
+          <span className="font-semibold text-violet-600">Demo mode</span> in
+          the top-right corner. See the{" "}
+          <strong>Examples</strong> and <strong>Methodology</strong> tabs for
+          more details on how the engine works.
+        </p>
+
+        <div className="mt-2 rounded-lg bg-violet-50 border border-violet-100 px-3.5 py-2.5 text-[11px] text-violet-700 leading-relaxed">
+          <strong>Tip:</strong> Demo Mode is currently{" "}
+          <span className="font-bold">on</span> — the queue shows 15 pre-loaded
+          examples. Toggle it off in the header to start with a clean slate.
+        </div>
+
+        <button
+          onClick={onClose}
+          className="mt-5 w-full rounded-lg bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-stone-800 transition-colors"
+        >
+          Got it, let's go →
+        </button>
+
+        <p className="mt-3 text-center text-[10px] text-stone-300">
+          This message won't appear again.
+        </p>
+      </div>
     </div>
   );
 }

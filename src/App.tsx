@@ -490,13 +490,14 @@ function WelcomeModal({ onClose }: { onClose: () => void }) {
         <p className="text-sm text-stone-600 leading-relaxed">
           Welcome to the <strong>Bug Triage Console</strong> for the Salient
           Take Home Exercise, created by{" "}
-          <strong>Neal Bhandari</strong>. The 15 example reports are already
-          loaded so you can explore the interface right away. You can toggle
-          them off at any time by turning off{" "}
+          <strong>Neal Bhandari</strong>.<br /><br />
+          The 15 example reports are already loaded so you can explore the
+          interface right away. You can toggle them off at any time by turning
+          off{" "}
           <span className="font-semibold text-violet-600">Demo mode</span> in
-          the top-right corner. See the{" "}
-          <strong>Examples</strong> and <strong>Methodology</strong> tabs for
-          more details on how the engine works.
+          the top-right corner.<br /><br />
+          See the <strong>Examples</strong> and <strong>Methodology</strong>{" "}
+          tabs for more details on how the engine works.
         </p>
 
         <div className="mt-2 rounded-lg bg-violet-50 border border-violet-100 px-3.5 py-2.5 text-[11px] text-violet-700 leading-relaxed">

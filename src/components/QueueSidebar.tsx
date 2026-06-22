@@ -33,7 +33,7 @@ export default function QueueSidebar({
     sevFilter === "" ? items : items.filter((i) => i.severity === sevFilter);
 
   return (
-    <div className="flex flex-col h-full border-r border-cream-border bg-card">
+    <div className="flex flex-col h-full overflow-hidden border-r border-cream-border bg-card">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-3 border-b border-cream-border shrink-0">
         <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
@@ -80,7 +80,7 @@ export default function QueueSidebar({
       </div>
 
       {/* Items list */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {filtered.length === 0 ? (
           <div className="p-4 text-center text-xs text-stone-400">
             {items.length === 0

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TooltipsContext } from "./lib/tooltipContext";
 
 function SalientLogo() {
@@ -33,6 +33,7 @@ import {
   type OverrideEntry,
 } from "./lib/storage";
 import { classifyWithLLM } from "./lib/llm";
+import { SEEDS } from "./lib/seeds";
 import StatBar from "./components/StatBar";
 import InputForm from "./components/InputForm";
 import ResultCard from "./components/ResultCard";
@@ -65,10 +66,50 @@ export default function App() {
   const [sidebarSevFilter, setSidebarSevFilter] = useState<Severity | "">("");
   // Global tooltip toggle
   const [tooltipsEnabled, setTooltipsEnabled] = useState(true);
+  // Demo mode — replaces the queue with exactly the 15 spec seeds, restores on exit
+  const [demoMode, setDemoMode] = useState(false);
+  const savedQueue = useRef<QueueItem[]>([]);
+  // Keep a live ref to queue so the demo-off branch can restore without stale closure
+  const queueRef = useRef<QueueItem[]>(queue);
 
   useEffect(() => {
     saveQueue(queue);
+    queueRef.current = queue;
   }, [queue]);
+
+  useEffect(() => {
+    if (demoMode) {
+      // Snapshot the real queue so we can restore it when demo mode turns off
+      savedQueue.current = queueRef.current;
+      const base = Date.now();
+      const DEMO_STATUSES: ItemStatus[] = [
+        "New", "New", "Routed", "In Review", "Routed",
+        "In Review", "New", "New", "Resolved", "In Review",
+        "Resolved", "New", "In Review", "Routed", "New",
+      ];
+      const items: QueueItem[] = SEEDS.filter((s) => s.id <= 15).map((seed, i) => {
+        const result = triage({ bugReport: seed.bugReport, customer: "", impact: seed.impact });
+        return {
+          id: newId(),
+          createdAt: new Date(base - (15 - i) * 7 * 60 * 1000).toISOString(),
+          input: { bugReport: seed.bugReport, customer: `Example #${seed.id}`, impact: seed.impact },
+          recommendation: result,
+          bucket: result.primaryBucket,
+          severity: result.severity,
+          status: DEMO_STATUSES[i],
+          overrides: [],
+        };
+      });
+      setQueue(items); // replace — only the 15 examples are visible
+      setSelectedId(null);
+      setDraft(null);
+    } else {
+      // Restore whatever was in the queue before demo mode was turned on
+      setQueue(savedQueue.current);
+      savedQueue.current = [];
+      setSelectedId(null);
+    }
+  }, [demoMode]);
 
   const selected = useMemo(
     () => queue.find((i) => i.id === selectedId) ?? null,
@@ -193,23 +234,8 @@ export default function App() {
           <p className="text-xs text-stone-400">
             deterministic · auditable · no auto-routing
           </p>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[11px] text-stone-400">Tooltips</span>
-            <button
-              role="switch"
-              aria-checked={tooltipsEnabled}
-              onClick={() => setTooltipsEnabled((v) => !v)}
-              className={`relative inline-flex h-4 w-7 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none ${
-                tooltipsEnabled ? "bg-stone-700" : "bg-stone-300"
-              }`}
-            >
-              <span
-                className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${
-                  tooltipsEnabled ? "translate-x-3.5" : "translate-x-0.5"
-                }`}
-              />
-            </button>
-          </div>
+          <Toggle label="Tooltips" checked={tooltipsEnabled} onChange={setTooltipsEnabled} />
+          <Toggle label="Demo mode" checked={demoMode} onChange={setDemoMode} accent />
         </div>
       </header>
 
@@ -336,6 +362,40 @@ export default function App() {
 }
 
 // ---------------------------------------------------------------------------
+
+function Toggle({
+  label,
+  checked,
+  onChange,
+  accent = false,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  accent?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[11px] text-stone-400">{label}</span>
+      <button
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-4 w-7 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+          checked
+            ? accent ? "bg-violet-500" : "bg-stone-700"
+            : "bg-stone-300"
+        }`}
+      >
+        <span
+          className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-3.5" : "translate-x-0.5"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
 
 function DraftActions({
   draft,

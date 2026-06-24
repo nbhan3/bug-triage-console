@@ -187,6 +187,182 @@ function SeverityTable() {
   );
 }
 
+function TwoAxisDiagram() {
+  const W = 640;
+  const H = 400;
+
+  // Plot bounds
+  const px0 = 132, px1 = 590, py0 = 55, py1 = 335;
+
+  // Column x positions
+  const xSingle = 197;
+  const xMany = 363;
+  const xOutage = 528;
+
+  // Row y positions
+  const yNone = 315;
+  const yFinancial = 210;
+  const yIllegal = 100;
+
+  // Harm zone: from plot top to midpoint between None and Financial
+  const harmZoneBottom = (yNone + yFinancial) / 2; // 262.5
+
+  const SEV_COLOR = ["#dc2626", "#f97316", "#a16207", "#a1a1aa"];
+  const SEV_LEGEND = ["Sev0 — page on-call", "Sev1 — same-day", "Sev2 — backlog", "Sev3 — monitor"];
+
+  const POINTS: Array<{
+    cx: number; cy: number; sev: number;
+    label: string; lx: number; ly: number; anchor: "start" | "middle" | "end";
+  }> = [
+    { cx: xSingle, cy: yNone,        sev: 3, label: "cosmetic one-off",              lx: xSingle,      ly: yNone + 18,      anchor: "middle" },
+    { cx: 268,     cy: yNone,        sev: 2, label: "#6  loops a question",           lx: 268,          ly: yNone - 14,      anchor: "middle" },
+    { cx: xMany,   cy: yNone,        sev: 1, label: "#2  robotic voice (many)",       lx: xMany,        ly: yNone + 18,      anchor: "middle" },
+    { cx: xOutage, cy: yNone,        sev: 0, label: "#9  carrier connect ~0",         lx: xOutage,      ly: yNone - 14,      anchor: "middle" },
+    { cx: xSingle, cy: yFinancial,   sev: 1, label: '#13  insists "not paid"',        lx: xSingle + 13, ly: yFinancial + 4,  anchor: "start"  },
+    { cx: 278,     cy: yFinancial+8, sev: 1, label: "#11  double-logs payment",       lx: 278 + 13,     ly: yFinancial + 14, anchor: "start"  },
+    { cx: xMany+18,cy: yFinancial-20,sev: 1, label: "#15  misreads $1,020 as $120",  lx: xMany + 32,   ly: yFinancial - 22, anchor: "start"  },
+    { cx: 420,     cy: 152,          sev: 0, label: "#14  recordings lost (many)",    lx: 420 + 13,     ly: 156,             anchor: "start"  },
+    { cx: xSingle, cy: yIllegal,     sev: 0, label: '#3  "you\'ll be arrested"',      lx: xSingle + 13, ly: yIllegal + 4,   anchor: "start"  },
+  ];
+
+  return (
+    <figure className="rounded-xl border border-cream-border bg-white overflow-hidden">
+      {/* Title */}
+      <div className="pt-4 pb-1 text-center">
+        <span className="text-sm font-bold text-stone-800">The Two-Axis Severity Model</span>
+        <span className="text-sm text-stone-400 mx-1">·</span>
+        <span className="text-sm text-stone-500">example cases plotted</span>
+      </div>
+
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        className="w-full h-auto"
+        style={{ fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif" }}
+        aria-label="Two-axis severity model chart"
+      >
+        <defs>
+          <marker id="sev-arrow" markerWidth="7" markerHeight="5" refX="5.5" refY="2.5" orient="auto">
+            <polygon points="0 0, 7 2.5, 0 5" fill="#dc2626" />
+          </marker>
+        </defs>
+
+        {/* Harm override zone background */}
+        <rect x={px0} y={py0} width={px1 - px0} height={harmZoneBottom - py0} fill="#fef2f2" />
+
+        {/* Plot border */}
+        <rect x={px0} y={py0} width={px1 - px0} height={py1 - py0}
+          fill="none" stroke="#d6d3d1" strokeWidth="1" />
+
+        {/* Harm zone dashed boundary */}
+        <line x1={px0} y1={harmZoneBottom} x2={px1} y2={harmZoneBottom}
+          stroke="#fca5a5" strokeWidth="1" strokeDasharray="5 3" />
+
+        {/* Horizontal level guide lines */}
+        <line x1={px0} y1={yNone}      x2={px1} y2={yNone}      stroke="#d6d3d1" strokeWidth="0.75" />
+        <line x1={px0} y1={yFinancial} x2={px1} y2={yFinancial} stroke="#e7e5e4" strokeWidth="0.75" strokeDasharray="3 3" />
+        <line x1={px0} y1={yIllegal}   x2={px1} y2={yIllegal}   stroke="#e7e5e4" strokeWidth="0.75" strokeDasharray="3 3" />
+
+        {/* Vertical column guide lines */}
+        {[xSingle, xMany, xOutage].map((x) => (
+          <line key={x} x1={x} y1={py0} x2={x} y2={py1}
+            stroke="#e7e5e4" strokeWidth="0.75" strokeDasharray="3 3" />
+        ))}
+
+        {/* HARM OVERRIDE ZONE label */}
+        <text x={px1 - 8} y={py0 + 16} textAnchor="end"
+          fontSize="9" fontWeight="700" fill="#ef4444" letterSpacing="0.08em">
+          HARM OVERRIDE ZONE
+        </text>
+
+        {/* Y-axis labels */}
+        <text x={px0 - 9} y={yIllegal + 4}  textAnchor="end" fontSize="10.5" fontWeight="500" fill="#57534e">Illegal threat</text>
+        <text x={px0 - 9} y={yIllegal + 16} textAnchor="end" fontSize="10"   fill="#78716c">(FDCPA)</text>
+        <text x={px0 - 9} y={yFinancial - 5} textAnchor="end" fontSize="10.5" fontWeight="500" fill="#57534e">Financial /</text>
+        <text x={px0 - 9} y={yFinancial + 8} textAnchor="end" fontSize="10"   fill="#78716c">misrepresentation</text>
+        <text x={px0 - 9} y={yNone + 4}      textAnchor="end" fontSize="10.5" fontWeight="500" fill="#57534e">None</text>
+
+        {/* Y-axis tick marks */}
+        {[yIllegal, yFinancial, yNone].map((y) => (
+          <line key={y} x1={px0 - 4} y1={y} x2={px0} y2={y} stroke="#a8a29e" strokeWidth="1" />
+        ))}
+
+        {/* Y-axis label (rotated) */}
+        <text
+          transform={`translate(16, ${(py0 + py1) / 2}) rotate(-90)`}
+          textAnchor="middle" fontSize="11" fontWeight="700" fill="#292524"
+        >
+          Axis 2 — Compliance / financial harm  →
+        </text>
+
+        {/* Y-axis arrow tip */}
+        <polygon points={`${px0},${py0} ${px0 - 4},${py0 + 7} ${px0 + 4},${py0 + 7}`} fill="#a8a29e" />
+
+        {/* X-axis labels */}
+        {[
+          { x: xSingle, label: "Single caller" },
+          { x: xMany,   label: "Many callers"  },
+          { x: xOutage, label: "Outage"         },
+        ].map(({ x, label }) => (
+          <text key={x} x={x} y={py1 + 18} textAnchor="middle" fontSize="11" fill="#57534e">{label}</text>
+        ))}
+
+        {/* X-axis tick marks */}
+        {[xSingle, xMany, xOutage].map((x) => (
+          <line key={x} x1={x} y1={py1} x2={x} y2={py1 + 4} stroke="#a8a29e" strokeWidth="1" />
+        ))}
+
+        {/* X-axis arrow tip */}
+        <polygon points={`${px1},${py1} ${px1 - 7},${py1 - 3} ${px1 - 7},${py1 + 3}`} fill="#a8a29e" />
+
+        {/* X-axis label */}
+        <text x={(px0 + px1) / 2} y={H - 10} textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#292524">
+          Axis 1 — Operational impact  →
+        </text>
+
+        {/* Annotation arrow: text to point #3 */}
+        <line
+          x1={270} y1={162}
+          x2={xSingle + 9} y2={yIllegal + 6}
+          stroke="#dc2626" strokeWidth="1.5" markerEnd="url(#sev-arrow)"
+        />
+        <text x={275} y={153} fontSize="10" fontWeight="700" fill="#dc2626">Single caller, but Sev0:</text>
+        <text x={275} y={165} fontSize="10" fontWeight="700" fill="#dc2626">harm overrides volume</text>
+
+        {/* Data points (rendered last so they sit on top) */}
+        {POINTS.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.cx} cy={p.cy} r={8} fill={SEV_COLOR[p.sev]} opacity={0.9} />
+            <text x={p.lx} y={p.ly} textAnchor={p.anchor} fontSize="10" fill="#292524">
+              {p.label}
+            </text>
+          </g>
+        ))}
+
+        {/* Legend — 2×2 in top-left of plot */}
+        {[0, 1, 2, 3].map((sev) => {
+          const col = sev % 2;
+          const row = Math.floor(sev / 2);
+          const lx = px0 + 8 + col * 150;
+          const ly = py0 + 8 + row * 17;
+          return (
+            <g key={sev}>
+              <rect x={lx} y={ly} width={110 + (col === 0 ? 8 : 0)} height={14} rx={2} fill="white" fillOpacity={0.75} />
+              <circle cx={lx + 7} cy={ly + 7} r={5} fill={SEV_COLOR[sev]} opacity={0.9} />
+              <text x={lx + 17} y={ly + 10} fontSize="9.5" fill="#57534e">{SEV_LEGEND[sev]}</text>
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Caption */}
+      <figcaption className="px-5 pb-4 text-xs text-center text-stone-500 italic leading-relaxed">
+        Severity is the higher of the two axes. Operational impact sets a floor; a compliance or financial
+        harm raises it regardless of volume.
+      </figcaption>
+    </figure>
+  );
+}
+
 function PrecedenceList() {
   return (
     <ol className="space-y-3">
@@ -384,6 +560,7 @@ export default function Methodology() {
           exposure floors and the systemic-scope rule can only raise it, never lower it.
         </p>
         <SeverityTable />
+        <TwoAxisDiagram />
       </section>
 
       {/* Exposure */}

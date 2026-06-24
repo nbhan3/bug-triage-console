@@ -42,8 +42,9 @@ import QueueSidebar from "./components/QueueSidebar";
 import TriageQueue from "./components/TriageQueue";
 import Methodology from "./components/Methodology";
 import BatchResults from "./components/BatchResults";
+import Roadmap from "./components/Roadmap";
 
-type Tab = "triage" | "queue" | "batch" | "methodology";
+type Tab = "triage" | "queue" | "batch" | "methodology" | "roadmap";
 
 interface Draft {
   input: TriageInput;
@@ -251,6 +252,7 @@ export default function App() {
             { id: "queue", label: queue.length > 0 ? `Queue (${queue.length})` : "Queue" },
             { id: "batch", label: "Examples" },
             { id: "methodology", label: "Methodology" },
+            { id: "roadmap", label: "Roadmap" },
           ] as { id: Tab; label: string }[]
         ).map((tab) => (
           <button
@@ -360,6 +362,9 @@ export default function App() {
 
       {/* ── Tab: Methodology ── */}
       {activeTab === "methodology" && <Methodology />}
+
+      {/* ── Tab: Roadmap ── */}
+      {activeTab === "roadmap" && <Roadmap />}
     </div>
 
     {/* Welcome modal — first visit only */}

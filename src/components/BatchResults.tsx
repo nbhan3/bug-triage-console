@@ -12,6 +12,14 @@ import Tooltip from "./Tooltip";
 
 export default function BatchResults() {
   const [ran, setRan] = useState(false);
+  const [expanded, setExpanded] = useState<Set<number>>(new Set());
+
+  const toggle = (id: number) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
 
   const results = useMemo(() => {
     if (!ran) return [];
@@ -82,10 +90,18 @@ export default function BatchResults() {
 
                 <td className="px-3 py-3 max-w-[260px]">
                   <p className="text-stone-700 leading-snug">
-                    {seed.bugReport.length > 100
-                      ? seed.bugReport.slice(0, 100) + "…"
-                      : seed.bugReport}
+                    {expanded.has(seed.id) || seed.bugReport.length <= 100
+                      ? seed.bugReport
+                      : seed.bugReport.slice(0, 100) + "…"}
                   </p>
+                  {seed.bugReport.length > 100 && (
+                    <button
+                      onClick={() => toggle(seed.id)}
+                      className="mt-1 text-[10px] font-medium text-stone-400 hover:text-stone-600 transition-colors"
+                    >
+                      {expanded.has(seed.id) ? "Show less ↑" : "Show more ↓"}
+                    </button>
+                  )}
                   <p className="mt-0.5 text-[10px] text-stone-400 uppercase tracking-wide">
                     {seed.impact === "outage" ? "Outage" : seed.impact === "many" ? "Many callers" : "Single caller"}
                   </p>
